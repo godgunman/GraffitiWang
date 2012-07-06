@@ -8,12 +8,13 @@ int pattern = -2;
 float pos_x = 0.0;
 float pos_y = 0.0;
 int diameter = 20;
+boolean start = false;
 
 float[][] iconPos = new float[10][3];
 int cur = 0;
 Server myServer;
 Client thisClient;
-
+Animation man;
 
 void setup()
 {
@@ -24,6 +25,14 @@ void setup()
   smooth();
   frameRate(30);
   bg = loadImage("graffiti.jpeg");
+  
+  PImage[] seq = new PImage[5];
+  for (int i = 0; i < seq.length; i++) {
+    seq[i] = loadImage("animation"+(i+1)+".png"); 
+    seq[i].resize(192,256);
+  }
+  
+  man = new Animation(seq,50,100);  
 }
 
 
@@ -79,29 +88,30 @@ void draw()
     
     if (thisClient != null) {
       if (thisClient.available() > 0) {
+        start = true;
         Parsing( thisClient.readString()  );
       } 
     }
-    beginAnimation();
-    pointer();
+    if(!start)
+      beginAnimation();
+    if(start)
+      pointer();
+   
 }
 
 void chooseIcon(){
     switch( pattern ){
       case 0:
-        icon = loadImage("apple.png");
+        icon = loadImage("imgres-shake.png");
         break;
       case 1:
-         icon = loadImage("book.png");
+         icon = loadImage("throw.png");
          break;
       case 2:
-         icon = loadImage("android.png");
+         icon = loadImage("tap.png");
          break;
       case 3:
-           icon = loadImage("camera.png");
-           break;
-      case 4:
-           icon = loadImage("block.png");
+           icon = loadImage("circle.png");
            break;
       default:
            break;
@@ -122,14 +132,10 @@ void drawEvent(){
 }
 
 void beginAnimation(){
-  PImage[] seq = new PImage[5];
-  for (int i = 0; i < seq.length; i++) {
-    seq[i] = loadImage("animation"+(i+1)+".png"); 
-  }
-  
-  Animate man =new Animate(seq,100,50);
   background(255);
   
-   for (int i = 0; i < Animate.length; i ++ ) {
-    man.display();
+  man.display();
+  man.next();
+  
+
 }
