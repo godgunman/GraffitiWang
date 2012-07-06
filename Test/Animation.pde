@@ -27,7 +27,7 @@ class Animation {
     y = y_;
     
     // A random speed
-    speed = random(0.01,0.05);
+    speed = random(0.02,0.05);
     // Starting at the beginning
     index = 0;
 
@@ -39,14 +39,17 @@ class Animation {
     image(images[imageIndex], x, y);
   }
 
-  void move() {
-    // Object only moves horizontally
-    x += speed;
-    if (x > width) {
-      x = -images[0].width;
-    }
-  }
+  
 
- 
+  void next() {
+    // Move the index forward in the animation sequence
+    index += speed;
+    // If we are at the end, go back to the beginning
+    if (index >= images.length) {
+      // We could just say index = 0
+      // but this is slightly more accurate
+      index -= images.length;
+    } 
+  }
 }
 

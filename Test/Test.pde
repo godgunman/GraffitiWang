@@ -3,14 +3,17 @@ import processing.net.*;
 int port = 9999;
 
 PImage bg;
-PImage icon;
+PImage[]icon = new PImage[4];
 int pattern = -2;
 float pos_x = 0.0;
 float pos_y = 0.0;
 int diameter = 20;
 boolean start = false;
+int count = 0;
+
 
 float[][] iconPos = new float[10][3];
+PImage[] icns = new PImage[10];
 int cur = 0;
 Server myServer;
 Client thisClient;
@@ -29,10 +32,12 @@ void setup()
   PImage[] seq = new PImage[5];
   for (int i = 0; i < seq.length; i++) {
     seq[i] = loadImage("animation"+(i+1)+".png"); 
-    seq[i].resize(192,256);
+    seq[i].resize(230,307);
   }
   
-  man = new Animation(seq,50,100);  
+  man = new Animation(seq,40,120); 
+  
+  IconSet();
 }
 
 
@@ -44,13 +49,20 @@ void pointer(){
  // text(pos_y, -100,-100);
   ellipse( pos_x,pos_y, diameter, diameter );
   
-  if(icon!=null){
-  for( int i =0 ; i< iconPos.length; i++  ){ 
-     tint(255, 255-iconPos[i][2] );
-     image(icon, iconPos[i][0], iconPos[i][1] );
-     iconPos[i][2]+=5;
+  if( haveSomething() ){
+    for( int i =0 ; i< iconPos.length; i++  ){ 
+       tint(255, 255-iconPos[i][2] );
+       if( icns[i] != null ){
+         image( icns[i], iconPos[i][0], iconPos[i][1] );
+         iconPos[i][2]+=5;
+         if( iconPos[i][2] > 255 ){
+              count--;
+              iconPos[i][2] = 0;
+         }
+       }
+    }
   }
-  }
+  
 }
 
 void Parsing( String stream){
@@ -61,13 +73,15 @@ void Parsing( String stream){
       if(data.length == 4 ){
         pattern = int(data[0]);
         if( pattern == -2 ){
-          pos_x = float(data[1]);
+          pos_x = -float(data[1]);
           pos_y = -float(data[2]);
           pos_x = map(pos_x, -100, 100, -width/2, width/2 );
           pos_y = map(pos_y, -100, 100, -height/2, height/2 );
         }
-        else
+        else{
           drawEvent();
+          
+        }
       }
     }
     catch( Exception  e){
@@ -83,6 +97,7 @@ void Parsing( String stream){
 void draw()
 {
     background(bg);
+    PImage pimg;
     if( thisClient == null)
       thisClient = myServer.available();
     
@@ -94,41 +109,42 @@ void draw()
     }
     if(!start)
       beginAnimation();
-    if(start)
-      pointer();
+    else if(start)
+      pointer( );
    
 }
 
-void chooseIcon(){
-    switch( pattern ){
-      case 0:
-        icon = loadImage("imgres-shake.png");
-        break;
-      case 1:
-         icon = loadImage("throw.png");
-         break;
-      case 2:
-         icon = loadImage("tap.png");
-         break;
-      case 3:
-           icon = loadImage("circle.png");
-           break;
-      default:
-           break;
-    }
+void IconSet(){
+    imageMode(CENTER);
+    icon[0] = loadImage("imgres-shake.png");
+    icon[1] = loadImage("throw.png");
+    icon[2] = loadImage("tap.png");
+    icon[3] = loadImage("circle.png");
+     
 }
 
 void drawEvent(){
-    chooseIcon();
+    
     println("EV");
     if( cur == 9 )
     cur = 0;
-    
     iconPos[cur][0] = pos_x;
     iconPos[cur][1] = pos_y;
     iconPos[cur][2] = 0;
+    icns[cur] = icon[pattern];
+    
     cur++;
-    pattern = -2;
+    count++;
+   
+   
+}
+
+
+boolean haveSomething(){
+   if( count > 0)
+     return true;
+    else
+      return false;
 }
 
 void beginAnimation(){
