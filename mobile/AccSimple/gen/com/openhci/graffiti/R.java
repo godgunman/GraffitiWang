@@ -14,13 +14,16 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int btn=0x7f050006;
-        public static final int cusorX=0x7f050004;
-        public static final int cusorY=0x7f050005;
-        public static final int info=0x7f050000;
-        public static final int textx=0x7f050001;
-        public static final int texty=0x7f050002;
-        public static final int textz=0x7f050003;
+        public static final int btn=0x7f050008;
+        public static final int btn2=0x7f050009;
+        public static final int cusorX=0x7f050003;
+        public static final int cusorY=0x7f050004;
+        public static final int inD=0x7f050007;
+        public static final int textx=0x7f050000;
+        public static final int texty=0x7f050001;
+        public static final int textz=0x7f050002;
+        public static final int trueX=0x7f050005;
+        public static final int trueY=0x7f050006;
     }
     public static final class layout {
         public static final int main=0x7f030000;

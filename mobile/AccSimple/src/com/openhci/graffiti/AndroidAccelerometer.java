@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Timer;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -37,33 +38,42 @@ public class AndroidAccelerometer extends Activity {
 	Sensor accelerometerSensor;
 	FileWriter fw;
 	BufferedWriter bw;
-	TextView textInfo, textX, textY, textZ, cusorX, cusorY;
-	Button btn;
+	TextView textInfo, textX, textY, textZ, cusorX, cusorY, trueX, trueY, inD;
+	Button btn, btn2;
 	boolean control = false;
 	boolean controlFile = false;
 	int counter = 0;
 	int trainCounter;
-	float threshold = 3;
-
+	float threshold = 1;
+	float oldX;
+	float oldY;
 	float absX;
 	float absY;
-	
+
+	int index = -2;
+	int MouseControl = 0;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-//		 connectSocket();
+		connectSocket();
 		// 將BufferedWeiter與FileWrite物件做連結
 		//
-		textInfo = (TextView) findViewById(R.id.info);
+		// textInfo = (TextView) findViewById(R.id.info);
 		textX = (TextView) findViewById(R.id.textx);
 		textY = (TextView) findViewById(R.id.texty);
 		textZ = (TextView) findViewById(R.id.textz);
 		cusorX = (TextView) findViewById(R.id.cusorX);
 		cusorY = (TextView) findViewById(R.id.cusorY);
+		trueX = (TextView) findViewById(R.id.trueX);
+		trueY = (TextView) findViewById(R.id.trueY);
+		inD = (TextView) findViewById(R.id.inD);
+
 		btn = (Button) findViewById(R.id.btn);
+		btn2 = (Button) findViewById(R.id.btn2);
 
 		btn.setOnTouchListener(new OnTouchListener() {
 
@@ -89,7 +99,7 @@ public class AndroidAccelerometer extends Activity {
 						fw = new FileWriter("/sdcard/HCI/test" + counter
 								+ ".txt", false);
 						bw = new BufferedWriter(fw);
-						bw.write("+1 ");
+						bw.write("+4 ");
 
 						trainCounter = 0;
 
@@ -104,24 +114,25 @@ public class AndroidAccelerometer extends Activity {
 							bw.newLine();
 							bw.flush();
 
-//							String scaleResult = svm_scale.main(new String[] {
-//									"-r", "/sdcard/HCI/train2.range",
-//									"/sdcard/HCI/test" + counter + ".txt" });
-//
-//							FileWriter fw2 = new FileWriter("/sdcard/HCI/test"
-//									+ counter + ".txt.scale", false);
-//							BufferedWriter bw2 = new BufferedWriter(fw2); // 將BufferedWeiter與FileWrite物件做連結
-//
-//							bw2.write(scaleResult);
-//							bw2.flush();
+							String scaleResult = svm_scale.main(new String[] {
+									"-r", "/sdcard/HCI/train5.range",
+									"/sdcard/HCI/test" + counter + ".txt" });
 
-//							svm_predict
-//									.main(new String[] {
-//											"/sdcard/HCI/test" + counter
-//													+ ".txt.scale",
-//											"/sdcard/HCI/train2.model",
-//											"/sdcard/HCI/predict" + counter
-//													+ ".txt" });
+							FileWriter fw2 = new FileWriter("/sdcard/HCI/test"
+									+ counter + ".txt.scale", false);
+							BufferedWriter bw2 = new BufferedWriter(fw2); // 將BufferedWeiter與FileWrite物件做連結
+
+							bw2.write(scaleResult);
+							bw2.flush();
+
+							index = svm_predict
+									.main(new String[] {
+											"/sdcard/HCI/test" + counter
+													+ ".txt.scale",
+											"/sdcard/HCI/train5.model",
+											"/sdcard/HCI/predict" + counter
+													+ ".txt" });
+							// Log.d("index",""+index);
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -130,6 +141,25 @@ public class AndroidAccelerometer extends Activity {
 						counter++;
 						break;
 					}
+				}
+				// TODO Auto-generated method stub
+				return false;
+			}
+		});
+
+		btn2.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+					index = -2;
+					MouseControl = 1;
+
+					break;
+				case MotionEvent.ACTION_UP:
+
+					MouseControl = 0;
 				}
 				// TODO Auto-generated method stub
 				return false;
@@ -157,7 +187,7 @@ public class AndroidAccelerometer extends Activity {
 					+ String.valueOf(accelerometerSensor.getPower())
 					+ "\nClass: " + accelerometerSensor.getClass().toString();
 
-			textInfo.setText(strSensor);
+			// textInfo.setText(strSensor);
 
 		} else {
 			accelerometerPresent = false;
@@ -173,44 +203,49 @@ public class AndroidAccelerometer extends Activity {
 			public void run() {
 				// TODO Auto-generated method stub
 				Socket socket;
-				try {
-					
-					InetAddress serverAddr = InetAddress
-							.getByName("192.168.1.194");
-					// InetAddress serverAddr = InetAddress.getLocalHost();
-					while (true) {
-						Log.d("TCP", "C: Connecting...");
-						try {
-							socket = new Socket(serverAddr, 9999);
+				// InetAddress serverAddr = InetAddress.getLocalHost();
+				while (true) {
 
-							while (true) {
-								String message = String.format("m,%f,%f",absX,absY);
-								Log.d("TCP", "StringAfter");
-								try {
-									Log.d("TCP", "C: Sending: " + message);
-									PrintWriter out = new PrintWriter(
-											new BufferedWriter(
-													new OutputStreamWriter(
-															socket.getOutputStream())),
-											true);
-									out.println(message);
-								} catch (Exception e) {
-									Log.e("TCP", "S: Error", e);
-									e.printStackTrace();
-									socket.close();
-								} finally {
-
-								}
-							}
-
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
 					}
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-				}// TCPServer.SERVERIP
+					
+					Log.d("TCP", "C: Connecting...");
+					try {
+						InetAddress serverAddr = InetAddress
+								.getByName("192.168.1.194");
+						socket = new Socket(serverAddr, 9999);
 
+						while (true) {
+							Thread.sleep(100);
+
+							String message = String.format("%d,%f,%f,%d",
+									index, absX, absY, MouseControl);
+							Log.d("TCP", "StringAfter");
+							try {
+								Log.d("TCP", "C: Sending: " + message);
+								PrintWriter out = new PrintWriter(
+										new BufferedWriter(
+												new OutputStreamWriter(socket
+														.getOutputStream())),
+										true);
+								out.println(message);
+							} catch (Exception e) {
+								Log.e("TCP", "S: Error", e);
+								e.printStackTrace();
+								socket.close();
+							} finally {
+
+							}
+						}
+
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		});
 		thread.start();
@@ -268,25 +303,44 @@ public class AndroidAccelerometer extends Activity {
 			textX.setText("X: " + String.valueOf(event.values[0]));
 			textY.setText("Y: " + String.valueOf(event.values[1]));
 			textZ.setText("Z: " + String.valueOf(event.values[2]));
-			
-			absX = event.values[0] > 0 ? event.values[0] - threshold
-					: event.values[0] + threshold;
-			absY = event.values[1] > 0 ? event.values[1] - threshold
-					: event.values[1] + threshold;
+			inD.setText("ind: " + index);
+			// absX = event.values[0] > 0 ? event.values[0] - threshold
+			// : event.values[0] + threshold;
+			// absY = event.values[1] > 0 ? event.values[1] - threshold
+			// : event.values[1] + threshold;
+			// absX = Math.abs(event.values[0]);
+			// absY = Math.abs(event.values[1]);
+			// if (Math.abs(event.values[0]) < threshold)
+			// absX = 0;
+			// else
+			// absX = -(absX * 100 / 7);
+			if (MouseControl == 1) {
+				absX = event.values[0] * 100 / 7;
+				absY = (event.values[1] - 4) * 100 / 5;
+				if (Math.abs(oldX - absX) < 3)
+					absX = (float) (oldX * 0.999 + absX * 0.001);
+				// else if(absX)
 
-			if (Math.abs(event.values[0]) < threshold)
-				absX = 0;
-			else
-				absX = -(absX * 100 / 6);
-			
-			if (Math.abs(event.values[1]) < threshold)
-				absY = 0;
-			else 
-				absY = absY* 100 / 6;
+				// if (Math.abs(event.values[1]) < threshold)
+				// absY = 0;
+				// else
+				// absY = absY* 100 / 7;
+				float weight = Math.abs(oldY - absY) / 5;
+				if (Math.abs(oldY - absY) < 5)
+					absY = (float) (oldY * (1 - weight) + absY * weight);
 
-			cusorX.setText("cuX: "+ absX);
-			cusorY.setText("cuY: "+ absY);
+				// if(Math.abs(oldY-absY)<0.5)
+				// absY = (float) (oldY*0.8 + absY* 0.2);
 
+				oldX = absX;
+				oldY = absY;
+				cusorX.setText("cuX: " + absX);
+				cusorY.setText("cuY: " + absY);
+				trueX.setText("trX: "
+						+ String.valueOf(Math.abs(oldX - absX) < 4));
+				trueY.setText("trY: "
+						+ String.valueOf(Math.abs(oldY - absY) < 4));
+			}
 			if (control && trainCounter < 30) {
 				try {
 					Log.d("acc", event.values[0] + "," + event.values[1] + ","
