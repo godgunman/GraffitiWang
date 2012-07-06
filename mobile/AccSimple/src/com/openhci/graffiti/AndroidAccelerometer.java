@@ -115,7 +115,7 @@ public class AndroidAccelerometer extends Activity {
 							bw.flush();
 
 							String scaleResult = svm_scale.main(new String[] {
-									"-r", "/sdcard/HCI/train5.range",
+									"-r", "/sdcard/HCI/finalTrain.range.txt",
 									"/sdcard/HCI/test" + counter + ".txt" });
 
 							FileWriter fw2 = new FileWriter("/sdcard/HCI/test"
@@ -129,7 +129,7 @@ public class AndroidAccelerometer extends Activity {
 									.main(new String[] {
 											"/sdcard/HCI/test" + counter
 													+ ".txt.scale",
-											"/sdcard/HCI/train5.model",
+											"/sdcard/HCI/finalTrain.model.txt",
 											"/sdcard/HCI/predict" + counter
 													+ ".txt" });
 							// Log.d("index",""+index);
@@ -206,22 +206,17 @@ public class AndroidAccelerometer extends Activity {
 				// InetAddress serverAddr = InetAddress.getLocalHost();
 				while (true) {
 
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
 					
 					Log.d("TCP", "C: Connecting...");
 					try {
 						InetAddress serverAddr = InetAddress
-								.getByName("192.168.1.194");
+								.getByName("192.168.43.244");
 						socket = new Socket(serverAddr, 9999);
 
 						while (true) {
+							
 							Thread.sleep(100);
-
+							
 							String message = String.format("%d,%f,%f,%d",
 									index, absX, absY, MouseControl);
 							Log.d("TCP", "StringAfter");
@@ -233,6 +228,7 @@ public class AndroidAccelerometer extends Activity {
 														.getOutputStream())),
 										true);
 								out.println(message);
+								out.flush();
 							} catch (Exception e) {
 								Log.e("TCP", "S: Error", e);
 								e.printStackTrace();
@@ -281,12 +277,6 @@ public class AndroidAccelerometer extends Activity {
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		try {
-			bw.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	private SensorEventListener accelerometerListener = new SensorEventListener() {
