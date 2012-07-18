@@ -210,7 +210,7 @@ public class AndroidAccelerometer extends Activity {
 					Log.d("TCP", "C: Connecting...");
 					try {
 						InetAddress serverAddr = InetAddress
-								.getByName("192.168.43.244");
+								.getByName("192.168.0.15");
 						socket = new Socket(serverAddr, 9999);
 
 						while (true) {
@@ -305,19 +305,24 @@ public class AndroidAccelerometer extends Activity {
 			// else
 			// absX = -(absX * 100 / 7);
 			if (MouseControl == 1) {
-				absX = event.values[0] * 100 / 7;
-				absY = (event.values[1] - 4) * 100 / 5;
+				absX = event.values[0] * 10; //   100/10
+				absY = (event.values[1] - 4) * 100 / 6;
 				if (Math.abs(oldX - absX) < 3)
-					absX = (float) (oldX * 0.999 + absX * 0.001);
+					absX = (float) (oldX * 0.99 + absX * 0.01);
+				absX = Math.max(-90, Math.min(90, absX));
+				absY = Math.max(-90, Math.min(90, absY));
+//					absX = oldX;
 				// else if(absX)
 
 				// if (Math.abs(event.values[1]) < threshold)
 				// absY = 0;
 				// else
 				// absY = absY* 100 / 7;
+				
 				float weight = Math.abs(oldY - absY) / 5;
-				if (Math.abs(oldY - absY) < 5)
+				if (Math.abs(oldY - absY) < 5) 
 					absY = (float) (oldY * (1 - weight) + absY * weight);
+//					absY = oldY;
 
 				// if(Math.abs(oldY-absY)<0.5)
 				// absY = (float) (oldY*0.8 + absY* 0.2);
